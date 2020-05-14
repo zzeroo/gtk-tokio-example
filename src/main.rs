@@ -26,7 +26,7 @@ struct UiElements {
 
 fn build_ui(
     application: &gtk::Application,
-    ui_event_sender: Sender<UiEvent>,
+    ui_event_sender: Rc<RefCell<Sender<UiEvent>>>,
     data_event_receiver: Rc<RefCell<Option<Receiver<DataEvent>>>>,
 ) {
     let glade_src = include_str!("main.glade");
@@ -46,26 +46,27 @@ fn build_ui(
 
     {
         let info_label = info_label.clone();
-        refresh_button.connect_clicked(move |_| {
+        let ui_event_sender = ui_event_sender.clone();
+        refresh_button.connect_clicked(move |_|{
             ui_event_sender
-                .clone()
+                .borrow_mut()
                 .try_send(UiEvent::Refresh)
                 .expect("send UI event from refresh button");
             info_label.set_text("Fetching...");
         });
     }
 
-    // **This triggers**: `futures_channel::mpsc::Sender<UiEvent>`, which does not implement the `Copy` trait 
-    // {
-    //     let info_label = info_label.clone();
-    //     refresh_button2.connect_clicked(move |_| {
-    //         ui_event_sender
-    //             .clone()
-    //             .try_send(UiEvent::Refresh)
-    //             .expect("send UI event from refresh button");
-    //         info_label.set_text("Fetching...");
-    //     });
-    // }
+    {
+        let info_label = info_label.clone();
+        let ui_event_sender = ui_event_sender.clone();
+        refresh_button2.connect_clicked(move |_|{
+            ui_event_sender
+                .borrow_mut()
+                .try_send(UiEvent::Refresh)
+                .expect("send UI event from refresh button2");
+            info_label.set_text("Fetching...");
+        });
+    }
 
     window.show_all();
 
@@ -152,6 +153,7 @@ fn main() {
     // this type is a evil hack that I'm using because the closure passed to `connect_activate`
     // needs to be `Clone`.
     let data_event_receiver = Rc::new(RefCell::new(Some(data_event_receiver)));
+    let ui_event_sender = Rc::new(RefCell::new(ui_event_sender));
     application.connect_activate(move |app| {
         build_ui(app, ui_event_sender.clone(), data_event_receiver.clone());
     });
