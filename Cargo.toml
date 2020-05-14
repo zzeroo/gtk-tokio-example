@@ -1,0 +1,16 @@
+[package]
+name = "gtk-tokio-example"
+version = "0.1.0"
+authors = ["Stefan Müller <zzeroo> <co@zzeroo.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gio = {version = "*" }
+glib = {version = "*" }
+futures = "0.3"
+tokio = { version = "0.2.0-alpha.6" }
+reqwest = { version = "0.10.0-alpha.2", features = ["json"] }
+serde = {version = "*", features = ["derive"] }
+gtk = "0.8.1"
