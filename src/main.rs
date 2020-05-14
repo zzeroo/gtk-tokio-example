@@ -55,16 +55,17 @@ fn build_ui(
         });
     }
 
-    {
-        let info_label = info_label.clone();
-        refresh_button2.connect_clicked(move |_| {
-            ui_event_sender
-                .clone()
-                .try_send(UiEvent::Refresh)
-                .expect("send UI event from refresh button");
-            info_label.set_text("Fetching...");
-        });
-    }
+    // **This triggers**: `futures_channel::mpsc::Sender<UiEvent>`, which does not implement the `Copy` trait 
+    // {
+    //     let info_label = info_label.clone();
+    //     refresh_button2.connect_clicked(move |_| {
+    //         ui_event_sender
+    //             .clone()
+    //             .try_send(UiEvent::Refresh)
+    //             .expect("send UI event from refresh button");
+    //         info_label.set_text("Fetching...");
+    //     });
+    // }
 
     window.show_all();
 
